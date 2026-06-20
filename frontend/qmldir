@@ -1,0 +1,4 @@
+singleton Theme 1.0 Theme.qml
+singleton CalendarService 1.0 CalendarService.qml
+singleton MailService 1.0 MailService.qml
+singleton TasksService 1.0 TasksService.qml

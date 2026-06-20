@@ -1,0 +1,19 @@
+# Nix
+result
+result-*
+.direnv/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.uv-cache/
+
+# Editor / OS
+.qmlls.ini
+*.swp
+.DS_Store
+
+# Local secrets — never commit the gog keyring password
+*.env
+secrets/*.env

@@ -1,0 +1,21 @@
+[project]
+name = "waycal"
+version = "0.1.0"
+description = "Thin adapter over the gog CLI feeding the waycal Quickshell widgets"
+readme = "../README.md"
+requires-python = ">=3.11"
+# No runtime dependencies: gog does all Google API + OAuth work; the adapter is stdlib-only.
+dependencies = []
+
+[project.scripts]
+waycal-fetch = "waycal_fetch:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+only-include = ["waycal_fetch.py"]
+
+[tool.hatch.build.targets.wheel.sources]
+"waycal_fetch.py" = "waycal_fetch.py"

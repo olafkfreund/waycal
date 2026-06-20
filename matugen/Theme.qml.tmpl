@@ -1,0 +1,41 @@
+pragma Singleton
+
+import QtQuick
+import Quickshell
+
+// matugen template for waycal's Theme singleton (Phase 2 / optional theming).
+// Wire it up in ~/.config/matugen/config.toml:
+//
+//   [templates.waycal]
+//   input_path  = "~/path/to/waycal/matugen/Theme.qml.tmpl"
+//   output_path = "~/.config/quickshell/waycal/Theme.qml"
+//
+// Note: ~/.config/quickshell/waycal is a read-only symlink to the Nix store when
+// installed via the home-manager module. To let matugen write Theme.qml, point
+// `programs.waycal` at a mutable config dir, or copy the frontend out of the
+// store first. (Hardcoded fallbacks live in frontend/Theme.qml.)
+Singleton {
+    readonly property color background: "{{colors.surface.default.hex}}"
+    readonly property color surface: "{{colors.surface_container.default.hex}}"
+    readonly property color surfaceAlt: "{{colors.surface_container_high.default.hex}}"
+    readonly property color scrim: Qt.rgba(0, 0, 0, 0.6)
+
+    readonly property color text: "{{colors.on_surface.default.hex}}"
+    readonly property color subtext: "{{colors.on_surface_variant.default.hex}}"
+
+    readonly property color primary: "{{colors.primary.default.hex}}"
+    readonly property color accent: "{{colors.tertiary.default.hex}}"
+    readonly property color success: "{{colors.primary.default.hex}}"
+    readonly property color warning: "{{colors.tertiary.default.hex}}"
+    readonly property color danger: "{{colors.error.default.hex}}"
+    readonly property color outline: "{{colors.outline.default.hex}}"
+
+    readonly property int radius: 14
+    readonly property int pad: 12
+    readonly property int gap: 8
+    readonly property string fontFamily: "sans-serif"
+
+    function alpha(c, a) {
+        return Qt.rgba(c.r, c.g, c.b, a);
+    }
+}

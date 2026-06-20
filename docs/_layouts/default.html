@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}</title>
+  <meta name="description" content="{{ page.description | default: site.description | strip_newlines }}">
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="{{ '/' | relative_url }}">waycal</a>
+      <nav class="nav">
+        {% for item in site.nav %}
+          {% if item.url contains '://' %}
+            <a href="{{ item.url }}" rel="noopener">{{ item.title }}</a>
+          {% else %}
+            <a href="{{ item.url | relative_url }}">{{ item.title }}</a>
+          {% endif %}
+        {% endfor %}
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    {% if page.title %}
+      <div class="page-head">
+        <h1>{{ page.title }}</h1>
+        {% if page.tagline %}<p class="tagline">{{ page.tagline }}</p>{% endif %}
+      </div>
+    {% endif %}
+    {{ content }}
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>
+        waycal is free software under the MIT license.
+        Built by <a href="https://www.freundcloud.com" rel="noopener">Olaf K-Freund</a>.
+        Source on <a href="https://github.com/olafkfreund/waycal" rel="noopener">GitHub</a>.
+      </p>
+    </div>
+  </footer>
+</body>
+</html>

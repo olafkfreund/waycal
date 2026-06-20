@@ -1,0 +1,28 @@
+// waycal keybinds for niri — merge these into your ~/.config/niri/config.kdl
+// `binds { ... }` block. Each widget has its own IPC target so they toggle
+// independently.
+
+binds {
+    // Toggle the full-month calendar dashboard overlay
+    Mod+C { spawn "qs" "-c" "waycal" "ipc" "call" "calendar" "toggle"; }
+
+    // Toggle the unread-mail overlay
+    Mod+M { spawn "qs" "-c" "waycal" "ipc" "call" "mail" "toggle"; }
+
+    // Toggle the tasks overlay
+    Mod+T { spawn "qs" "-c" "waycal" "ipc" "call" "tasks" "toggle"; }
+
+    // Show/hide the always-on desktop widgets (per service)
+    Mod+Shift+C { spawn "qs" "-c" "waycal" "ipc" "call" "calendar" "widget"; }
+    Mod+Shift+M { spawn "qs" "-c" "waycal" "ipc" "call" "mail" "widget"; }
+    Mod+Shift+T { spawn "qs" "-c" "waycal" "ipc" "call" "tasks" "widget"; }
+
+    // Force a refresh
+    Mod+Shift+R { spawn "qs" "-c" "waycal" "ipc" "call" "calendar" "refresh"; }
+}
+
+// If you are NOT using the systemd user service (programs.waycal.systemd.enable),
+// start the widgets at login instead — but then GOG_KEYRING_PASSWORD must be in
+// niri's environment for gog to work:
+//
+// spawn-at-startup "qs" "-c" "waycal"

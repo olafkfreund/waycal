@@ -1,0 +1,33 @@
+title: waycal
+description: >-
+  Calendar, Mail and Tasks widgets for Wayland and niri, rendered with Quickshell
+  and driven entirely by the gog CLI.
+url: "https://olafkfreund.github.io"
+baseurl: "/waycal"
+repository: olafkfreund/waycal
+author: Olaf K-Freund
+
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  syntax_highlighter: rouge
+
+# The site lives in /docs of the waycal repo; exclude the project's own sources.
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+
+nav:
+  - title: Overview
+    url: /
+  - title: Get started
+    url: /getting-started/
+  - title: Source
+    url: https://github.com/olafkfreund/waycal
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default

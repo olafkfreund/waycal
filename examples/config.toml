@@ -1,0 +1,19 @@
+# Example ~/.config/waycal/config.toml — read by waycal-fetch.
+# (When using the home-manager module this file is generated from
+#  programs.waycal.settings; edit it there instead.)
+
+# gog account to query. Empty -> use $GOG_ACCOUNT or gog's single stored token.
+account = "you@example.com"
+
+# Calendar
+agenda_days = 7          # how far ahead the agenda widget looks
+agenda_max  = 50
+calendars   = "all"      # "all" or comma-separated calendar ids/names
+
+# Mail
+mail_query = "in:inbox is:unread"
+mail_max   = 20
+
+# Tasks
+task_lists = "all"       # "all" or comma-separated task list ids/names
+task_max   = 50
