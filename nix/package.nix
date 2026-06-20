@@ -7,9 +7,6 @@
 
 # waycal is mostly QML + a stdlib-only Python adapter. The adapter shells out to
 # the `gog` CLI at runtime (expected on PATH), so it has no Python dependencies.
-let
-  pythonEnv = python3;
-in
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "waycal";
   version = "0.1.0";
@@ -27,7 +24,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     mkdir -p $out/share/waycal
     cp -r frontend backend $out/share/waycal/
 
-    makeWrapper ${pythonEnv}/bin/python3 $out/bin/waycal-fetch \
+    makeWrapper ${python3}/bin/python3 $out/bin/waycal-fetch \
       --add-flags "$out/share/waycal/backend/waycal_fetch.py"
 
     runHook postInstall

@@ -29,6 +29,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -75,8 +76,8 @@ def load_config() -> dict:
             if isinstance(data.get("waycal"), dict):
                 data = data["waycal"]
             cfg.update({k: v for k, v in data.items() if k in DEFAULT_CONFIG})
-        except Exception:
-            # a broken config must not crash the widget; defaults win.
+        except (OSError, tomllib.TOMLDecodeError):
+            # a broken or unreadable config must not crash the widget; defaults win.
             pass
     return cfg
 
@@ -105,13 +106,36 @@ _AUTH_HINTS = (
     "credentials",
 )
 
+_SECRET_RE = re.compile(
+    r"(?i)(GOG_KEYRING_PASSWORD|refresh_token|password|authorization|bearer)([=:]\s*)\S+"
+)
+
+
+def _redact(text: str) -> str:
+    """Strip anything that looks like a secret before it is shown or logged."""
+    return _SECRET_RE.sub(r"\1\2[REDACTED]", text)
+
+
+def safe_arg(value: str, field: str) -> str:
+    """Reject config-derived values that could be misread as gog flags.
+
+    Everything from config.toml (account, calendars, mail_query) is passed to gog
+    as argv. A value beginning with '-' would be parsed as a flag rather than data
+    (argument injection), so refuse it for each comma-separated token.
+    """
+    text = str(value)
+    for token in text.split(","):
+        if token.strip().startswith("-"):
+            raise GogError(f"invalid {field}: value may not start with '-' ({token.strip()!r})")
+    return text
+
 
 def run_gog(cfg: dict, args: list[str], *, mutating: bool = False) -> object:
     """Run `gog --json <args>` and return parsed JSON (or raise GogError)."""
     cmd = [GOG, "--json"]
     account = cfg.get("account") or os.environ.get("GOG_ACCOUNT")
     if account:
-        cmd += ["--account", account]
+        cmd += ["--account", safe_arg(account, "account")]
     if not mutating:
         cmd.append("--no-input")  # never block on a prompt for read paths
     cmd += args
@@ -129,7 +153,7 @@ def run_gog(cfg: dict, args: list[str], *, mutating: bool = False) -> object:
         raise GogError("gog timed out after 30s") from exc
 
     if proc.returncode != 0:
-        stderr = (proc.stderr or "").strip()
+        stderr = _redact((proc.stderr or "").strip())
         needs_auth = any(h.lower() in stderr.lower() for h in _AUTH_HINTS)
         raise GogError(stderr or f"gog exited with code {proc.returncode}", needs_auth)
 
@@ -170,7 +194,7 @@ def pick(d: dict, *keys, default=None):
     return default
 
 
-def _time_part(value, *, want_date_only: bool):
+def _time_part(value):
     """Extract a time string and an all-day flag from a Google-style start/end."""
     if isinstance(value, dict):
         if value.get("dateTime"):
@@ -188,8 +212,8 @@ def _time_part(value, *, want_date_only: bool):
 def normalize_event(ev: dict) -> dict:
     start_raw = pick(ev, "start", "startTime", "start_time", "from", "begin")
     end_raw = pick(ev, "end", "endTime", "end_time", "to", "until")
-    start, all_day_s = _time_part(start_raw, want_date_only=False)
-    end, all_day_e = _time_part(end_raw, want_date_only=False)
+    start, all_day_s = _time_part(start_raw)
+    end, all_day_e = _time_part(end_raw)
     all_day = bool(pick(ev, "allDay", "all_day", default=all_day_s or all_day_e))
     return {
         "id": str(pick(ev, "id", "eventId", "iCalUID", default="")),
@@ -261,7 +285,7 @@ def cmd_month(cfg: dict, args) -> list[dict]:
 
 
 def cmd_mail(cfg: dict, args) -> list[dict]:
-    query = args.query or cfg["mail_query"]
+    query = safe_arg(args.query or cfg["mail_query"], "mail_query")
     payload = run_gog(cfg, ["gmail", "search", query, "--max", str(cfg["mail_max"])])
     return [normalize_mail(m) for m in as_items(payload)]
 
@@ -309,7 +333,7 @@ def _calendar_scope(cfg: dict) -> list[str]:
     cals = str(cfg.get("calendars", "all")).strip()
     if not cals or cals == "all":
         return ["--all"]
-    return ["--calendars", cals]
+    return ["--calendars", safe_arg(cals, "calendars")]
 
 
 def _event_sort_key(e: dict):
@@ -369,6 +393,10 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.write("\n")
         return 0  # always exit 0: the contract is "valid JSON on stdout"
     except Exception as exc:  # last-resort guard; never emit non-JSON
+        # Keep the JSON contract, but surface the real cause to the journal
+        # (redacted) so unexpected failures are debuggable.
+        import traceback
+        sys.stderr.write("[waycal-fetch] " + _redact(traceback.format_exc()))
         json.dump({"error": f"{type(exc).__name__}: {exc}", "needsAuth": False},
                   sys.stdout)
         sys.stdout.write("\n")
