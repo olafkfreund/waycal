@@ -2,87 +2,38 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
-import Quickshell
-import Quickshell.Wayland
 
 // Toggleable centered overlay listing all unread threads.
-PanelWindow {
-    id: win
-    visible: MailService.overlayOpen
+OverlayWindow {
+    visibleBinding: MailService.overlayOpen
+    onRequestClose: MailService.overlayOpen = false
+    onRefreshRequested: MailService.refresh()
+    namespace: "waycal-mail-overlay"
+    heading: "󰇮  Unread mail"
+    cardWidth: 620
+    cardHeight: 720
 
-    anchors { top: true; bottom: true; left: true; right: true }
-    exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "waycal-mail-overlay"
-    focusable: true
-    color: Theme.scrim
-
-    MouseArea {
+    ColumnLayout {
         anchors.fill: parent
-        onClicked: MailService.overlayOpen = false
-    }
-    Item {
-        anchors.fill: parent
-        focus: true
-        Keys.onEscapePressed: MailService.overlayOpen = false
-    }
+        spacing: Theme.gap
 
-    Rectangle {
-        anchors.centerIn: parent
-        width: 620
-        height: 720
-        radius: Theme.radius
-        color: Theme.background
-        border.color: Theme.outline
-        border.width: 1
+        StatusBanner {
+            Layout.fillWidth: true
+            loading: MailService.loading
+            error: MailService.error
+            needsAuth: MailService.needsAuth
+            count: MailService.model.count
+            emptyText: "Inbox zero ✨"
+        }
 
-        MouseArea { anchors.fill: parent }
-
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: Theme.pad * 2
+        ListView {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            clip: true
             spacing: Theme.gap
-
-            RowLayout {
-                Layout.fillWidth: true
-                Text {
-                    Layout.fillWidth: true
-                    text: "󰇮  Unread mail"
-                    color: Theme.text
-                    font.bold: true
-                    font.pixelSize: 20
-                    font.family: Theme.fontFamily
-                }
-                Text {
-                    text: "↻"
-                    color: Theme.subtext
-                    font.pixelSize: 20
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: MailService.refresh()
-                    }
-                }
-            }
-
-            StatusBanner {
-                Layout.fillWidth: true
-                loading: MailService.loading
-                error: MailService.error
-                needsAuth: MailService.needsAuth
-                count: MailService.model.count
-                emptyText: "Inbox zero ✨"
-            }
-
-            ListView {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                clip: true
-                spacing: Theme.gap
-                boundsBehavior: Flickable.StopAtBounds
-                model: MailService.model
-                delegate: MailRow {}
-            }
+            boundsBehavior: Flickable.StopAtBounds
+            model: MailService.model
+            delegate: MailRow {}
         }
     }
 }

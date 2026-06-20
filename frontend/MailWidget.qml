@@ -2,94 +2,54 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
-import Quickshell
-import Quickshell.Wayland
 
-// Always-on unread-mail card, anchored bottom-right by default.
-PanelWindow {
-    id: win
-    visible: MailService.widgetVisible
-    color: "transparent"
+// Always-on unread-mail card, anchored bottom-right.
+WidgetWindow {
+    anchorBottom: true
+    anchorRight: true
+    namespace: "waycal-mail"
+    heading: "󰇮  Inbox"
 
-    anchors { bottom: true; right: true }
-    margins { bottom: 16; right: 16 }
+    visibleBinding: MailService.widgetVisible
+    loading: MailService.loading
+    error: MailService.error
+    needsAuth: MailService.needsAuth
+    count: MailService.model.count
+    emptyText: "Inbox zero ✨"
 
-    WlrLayershell.layer: WlrLayer.Bottom
-    WlrLayershell.namespace: "waycal-mail"
-    exclusiveZone: 0
-
-    implicitWidth: 380
-    implicitHeight: frame.implicitHeight
-
-    Rectangle {
-        id: frame
-        anchors.fill: parent
-        radius: Theme.radius
-        color: Theme.alpha(Theme.background, 0.92)
-        border.color: Theme.outline
-        border.width: 1
-        implicitHeight: layout.implicitHeight + 2 * Theme.pad
-
-        ColumnLayout {
-            id: layout
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.margins: Theme.pad
-            spacing: Theme.gap
-
-            RowLayout {
-                Layout.fillWidth: true
-                Text {
-                    Layout.fillWidth: true
-                    text: "󰇮  Inbox"
-                    color: Theme.text
-                    font.bold: true
-                    font.pixelSize: 16
-                    font.family: Theme.fontFamily
-                }
-                Rectangle {
-                    visible: MailService.unreadCount > 0
-                    radius: height / 2
-                    color: Theme.primary
-                    implicitWidth: badge.implicitWidth + 12
-                    implicitHeight: badge.implicitHeight + 4
-                    Text {
-                        id: badge
-                        anchors.centerIn: parent
-                        text: MailService.unreadCount
-                        color: Theme.background
-                        font.bold: true
-                        font.pixelSize: 12
-                        font.family: Theme.fontFamily
-                    }
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: MailService.overlayOpen = !MailService.overlayOpen
-                    }
-                }
+    // header accessory: unread badge, click to toggle the mail overlay
+    accessory: Component {
+        Rectangle {
+            visible: MailService.unreadCount > 0
+            radius: height / 2
+            color: Theme.primary
+            implicitWidth: badge.implicitWidth + 12
+            implicitHeight: badge.implicitHeight + 4
+            Text {
+                id: badge
+                anchors.centerIn: parent
+                text: MailService.unreadCount
+                color: Theme.background
+                font.bold: true
+                font.pixelSize: 12
+                font.family: Theme.fontFamily
             }
-
-            StatusBanner {
-                Layout.fillWidth: true
-                loading: MailService.loading
-                error: MailService.error
-                needsAuth: MailService.needsAuth
-                count: MailService.model.count
-                emptyText: "Inbox zero ✨"
-            }
-
-            ListView {
-                Layout.fillWidth: true
-                Layout.preferredHeight: Math.min(440, contentHeight)
-                visible: MailService.model.count > 0
-                clip: true
-                spacing: Theme.gap
-                boundsBehavior: Flickable.StopAtBounds
-                model: MailService.model
-                delegate: MailRow {}
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: MailService.overlayOpen = !MailService.overlayOpen
             }
         }
+    }
+
+    ListView {
+        Layout.fillWidth: true
+        Layout.preferredHeight: Math.min(440, contentHeight)
+        visible: MailService.model.count > 0
+        clip: true
+        spacing: Theme.gap
+        boundsBehavior: Flickable.StopAtBounds
+        model: MailService.model
+        delegate: MailRow {}
     }
 }
