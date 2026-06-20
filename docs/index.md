@@ -1,10 +1,13 @@
 ---
 layout: default
-title: waycal
-tagline: Calendar, Mail and Tasks on your Wayland desktop, driven by one CLI.
+description: >-
+  Calendar, Mail and Tasks widgets for Wayland and niri, rendered with Quickshell
+  and driven entirely by the gog CLI.
 ---
 
 <div class="hero">
+  <h1>waycal</h1>
+  <p class="tagline">Calendar, Mail and Tasks on your Wayland desktop, driven by one CLI.</p>
   <p class="lead">
     waycal is a set of three desktop widgets for Wayland and the
     <a href="https://github.com/YaLTeR/niri">niri</a> compositor, rendered with
